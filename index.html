@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="uk"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Основні поняття реляційної бази даних</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--tx:#1d2330;--mu:#5b6578;--bd:#d9dee8;--ac:#2f6fed;--ok:#1b8a4b;--okb:#e3f5ea;--no:#c0392b;--nob:#fcebe9;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171d;--card:#1d222b;--tx:#e8ebf2;--mu:#9aa4b8;--bd:#333b4a;--ac:#6b9bff;--ok:#58d08a;--okb:#16301f;--no:#ff8a7d;--nob:#3a1c19;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14171d;--card:#1d222b;--tx:#e8ebf2;--mu:#9aa4b8;--bd:#333b4a;--ac:#6b9bff;--ok:#58d08a;--okb:#16301f;--no:#ff8a7d;--nob:#3a1c19;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:760px;margin:0 auto;padding:16px}
+h1{font-size:1.4rem;margin:.2em 0}
+.sub{color:var(--mu);margin:0 0 12px}
+.bar{height:8px;background:var(--bd);border-radius:6px;overflow:hidden;margin:8px 0 16px}
+.bar i{display:block;height:100%;width:0;background:var(--ac);transition:width .3s}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:14px}
+.lv{font-size:.78rem;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.04em}
+.q{font-weight:600;margin:4px 0 10px}
+.tw{overflow-x:auto;margin:8px 0}
+table{border-collapse:collapse;font-size:.92rem;min-width:100%}
+th,td{border:1px solid var(--bd);padding:5px 9px;text-align:left}
+th{background:var(--bg)}
+label.o{display:flex;gap:8px;align-items:flex-start;padding:7px 9px;border:1px solid var(--bd);border-radius:8px;margin:5px 0;cursor:pointer}
+label.o:hover{border-color:var(--ac)}
+select,input[type=text]{font:inherit;padding:6px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);max-width:100%}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:6px 0}
+.row b{min-width:160px}
+button{font:inherit;background:var(--ac);color:#fff;border:0;border-radius:8px;padding:8px 16px;cursor:pointer;margin-top:8px}
+button.s{background:var(--mu)}
+button:disabled{opacity:.5;cursor:default}
+.fb{margin-top:10px;padding:10px;border-radius:8px;display:none}
+.fb.ok{display:block;background:var(--okb);color:var(--ok)}
+.fb.no{display:block;background:var(--nob);color:var(--no)}
+.fb span{color:var(--tx)}
+#res{text-align:center;display:none}
+.card.lock{opacity:.5}
+.tg{font-size:.85rem;color:var(--ac);margin-bottom:4px}
+.tg:empty{display:none}
+button+button{margin-left:8px}
+#sk .row{margin:4px 0}
+#res .big{font-size:2rem;font-weight:700}
+</style></head><body><main>
+<h1>Основні поняття реляційної бази даних</h1>
+<p class="sub">9 завдань: від простих до складних. Після кожної перевірки ти побачиш пояснення.</p>
+<div class="bar"><i id="pb"></i></div>
+<div id="tasks"></div>
+<div class="card" id="sk" style="display:none"></div>
+<div class="card" id="res"><div class="big" id="sc"></div><p id="msg"></p><button id="rs">Пройти ще раз</button></div>
+</main>
+<script>
+const T1=`<div class="tw"><table><tr><th>Код</th><th>Прізвище</th><th>Клас</th><th>Середній бал</th><th>Олімпіада</th></tr>
+<tr><td>1</td><td>Коваленко</td><td>9-А</td><td>10,5</td><td>Так</td></tr>
+<tr><td>2</td><td>Шевчук</td><td>9-Б</td><td>8</td><td>Ні</td></tr>
+<tr><td>3</td><td>Бондар</td><td>9-А</td><td>11,2</td><td>Так</td></tr>
+<tr><td>4</td><td>Мельник</td><td>9-В</td><td>9,5</td><td>Ні</td></tr>
+<tr><td>5</td><td>Шевчук</td><td>9-А</td><td>7,5</td><td>Ні</td></tr></table></div>`;
+const TASKS=[
+{l:"Рівень 1 · Легко",q:"Що в таблиці бази даних називають полем (атрибутом)?",k:"single",o:["Один рядок таблиці з даними про об’єкт","Один стовпець таблиці, що описує певну властивість об’єкта","Конкретне значення в клітинці","Назву бази даних"],a:1,
+ ok:"Так! Поле — це стовпець, який описує одну властивість (наприклад, «Прізвище»).",no:"Поле (атрибут) — це стовпець таблиці. Рядок — це запис, а дані в клітинці — значення атрибута."},
+{l:"Рівень 1 · Легко",q:"Що називають записом у таблиці бази даних?",k:"single",o:["Стовпець із назвою властивості","Тип даних поля","Рядок таблиці, що містить повний набір даних про один об’єкт","Ключ для швидкого пошуку"],a:2,
+ ok:"Вірно! Запис — це рядок: усе, що ми знаємо про одного учня, одну книгу тощо.",no:"Запис — це рядок таблиці з даними про один об’єкт."},
+{l:"Рівень 1 · Легко",q:"Установи відповідність між поняттям і його значенням.",k:"match",
+ rows:["Поле","Запис","Значення атрибута","Первинний ключ"],
+ opts:["стовпець таблиці","рядок таблиці","дані в конкретній клітинці","поле, що однозначно визначає запис"],a:[0,1,2,3],
+ ok:"Чудово! Усі пари визначено правильно.",no:"Є помилки. Пам’ятай: поле — стовпець, запис — рядок, значення — вміст клітинки, ключ — унікальний ідентифікатор запису."},
+{l:"Рівень 2 · Середньо",q:"Скільки записів містить таблиця?",pre:T1,k:"num",a:"5",
+ ok:"Правильно! 5 рядків з даними — 5 записів. Заголовок із назвами полів не є записом.",no:"Порахуй рядки з даними учнів (без заголовка). Кожен рядок — це один запис."},
+{l:"Рівень 2 · Середньо",q:"Яке значення має атрибут «Середній бал» у записі з кодом 3?",pre:T1,k:"text",a:["11,2","11.2"],
+ ok:"Вірно! Перетин запису (рядка) з Кодом 3 і поля «Середній бал» дає 11,2.",no:"Знайди рядок із Кодом 3, а потім стовпець «Середній бал» — значення в клітинці на їх перетині."},
+{l:"Рівень 2 · Середньо",q:"Обери найбільш доречний тип даних для кожного поля.",k:"match",
+ rows:["Прізвище","Дата народження","Середній бал (наприклад, 10,5)","Кількість пропусків","Бере участь в олімпіаді (так/ні)"],
+ opts:["Текстовий","Дата/час","Дійсне число","Ціле число","Логічний"],a:[0,1,2,3,4],
+ ok:"Відмінно! Тип даних визначає, які значення можна зберігати і які дії з ними виконувати.",no:"Подумай, які значення зберігає поле: слова — текст, дробові числа — дійсне, кількість — ціле, «так/ні» — логічний тип."},
+{l:"Рівень 3 · Складніше",q:"Які поля таблиці учнів можуть бути первинним ключем? (Обери всі правильні)",pre:T1,k:"multi",
+ o:["Код","Прізвище","Клас","Середній бал","Номер учнівського квитка (унікальний для кожного учня)"],a:[0,4],
+ ok:"Так! Ключ має бути унікальним. Прізвище повторюється (Шевчук), клас і бал — теж.",no:"Первинний ключ не повинен повторюватись. Перевір: чи є однакові значення в полі «Прізвище», «Клас», «Середній бал»?"},
+{l:"Рівень 3 · Складніше",q:"Визнач, чи правильне кожне твердження.",k:"match",
+ rows:["Первинний ключ може містити однакові значення в різних записах","У полі «Номер телефону» краще використати текстовий тип, ніж числовий","Усі значення одного поля мають належати до одного типу даних","Кожен запис таблиці обов’язково має ключ-поле з однаковими значеннями"],
+ opts:["Правильно","Неправильно"],a:[1,0,0,1],
+ ok:"Чудово! Телефон — це не число для обчислень (він може починатися з «+» чи «0»), тому тип текстовий.",no:"Ключ завжди унікальний. Телефон зберігаємо як текст — з ним не виконують арифметику. Значення в полі мають однаковий тип."},
+{l:"Рівень 4 · Складно",q:"У таблиці «Читачі» 100 000 записів. Пошук за прізвищем виконується дуже повільно. Що найкраще зробити?",k:"single",
+ o:["Видалити поле «Прізвище»","Змінити тип поля «Прізвище» на числовий","Створити індекс за полем «Прізвище»","Додати ще один стовпець із прізвищем"],a:2,
+ ok:"Вірно! Індекс — допоміжна структура, як покажчик у книзі: СКБД швидко знаходить потрібні записи без перегляду всієї таблиці.",no:"Для прискорення пошуку створюють індекс за полем, за яким шукають. Він працює як алфавітний покажчик у книзі."}
+];
+const done=[],pts=[];
+const box=document.getElementById("tasks");
+function esc(s){return s}
+TASKS.forEach((t,i)=>{
+ let h=`<div class="card" id="c${i}"><div class="lv">Завдання ${i+1} з 9 · ${t.l}</div><div class="tg" id="t${i}"></div><div class="q">${t.q}</div>${t.pre||""}`;
+ if(t.k=="single")h+=t.o.map((o,j)=>`<label class="o"><input type="radio" name="r${i}" value="${j}"><span>${o}</span></label>`).join("");
+ if(t.k=="multi")h+=t.o.map((o,j)=>`<label class="o"><input type="checkbox" name="r${i}" value="${j}"><span>${o}</span></label>`).join("");
+ if(t.k=="match")h+=t.rows.map((r,j)=>`<div class="row"><b>${r}</b><select data-i="${i}" data-j="${j}"><option value="">— обери —</option>${t.opts.map((o,m)=>`<option value="${m}">${o}</option>`).join("")}</select></div>`).join("");
+ if(t.k=="num"||t.k=="text")h+=`<input type="text" id="in${i}" ${t.k=="num"?'inputmode="numeric"':''} placeholder="Твоя відповідь">`;
+ h+=`<div><button onclick="chk(${i})" id="b${i}">Перевірити</button><button class="s" onclick="skip(${i})" id="s${i}">Пропустити</button></div><div class="fb" id="f${i}"></div></div>`;
+ box.insertAdjacentHTML("beforeend",h);
+});
+function chk(i){
+ const t=TASKS[i],c=document.getElementById("c"+i);let ok=false,got=false;
+ if(t.k=="single"){const r=c.querySelector("input:checked");got=!!r;ok=got&&+r.value==t.a}
+ if(t.k=="multi"){const v=[...c.querySelectorAll("input:checked")].map(x=>+x.value);got=v.length>0;ok=v.length==t.a.length&&t.a.every(x=>v.includes(x))}
+ if(t.k=="match"){const s=[...c.querySelectorAll("select")];got=s.every(x=>x.value!=="");ok=got&&s.every((x,j)=>+x.value==t.a[j]);
+  if(got)s.forEach((x,j)=>{x.style.borderColor=+x.value==t.a[j]?"var(--ok)":"var(--no)"})}
+ if(t.k=="num"||t.k=="text"){const v=document.getElementById("in"+i).value.trim().toLowerCase();got=v!=="";ok=got&&[].concat(t.a).includes(v)}
+ const f=document.getElementById("f"+i);
+ if(!got){f.className="fb no";f.innerHTML="Спочатку дай відповідь (заповни всі поля).";return}
+ f.className="fb "+(ok?"ok":"no");
+ f.innerHTML=(ok?"✅ Правильно! ":"❌ Поки що не зовсім. ")+"<span>"+(ok?t.ok:t.no)+"</span>";
+ c.querySelectorAll("input,select").forEach(x=>x.disabled=true);
+ document.getElementById("b"+i).disabled=true;
+ done[i]=true;pts[i]=ok?1:0;skipped[i]=false;
+ refresh();goNext(i);
+}
+const skipped=[];
+function firstOpen(){return TASKS.findIndex((_,j)=>!done[j]&&!skipped[j])}
+function goTo(i){document.getElementById("c"+i).scrollIntoView({behavior:"smooth",block:"start"})}
+function goNext(i){const n=firstOpen();if(n>i)goTo(n)}
+function skip(i){skipped[i]=true;refresh();goNext(i)}
+function refresh(){
+ const first=firstOpen();
+ TASKS.forEach((t,i)=>{
+  const c=document.getElementById("c"+i),tg=document.getElementById("t"+i);
+  const locked=first!=-1&&i>first;
+  c.classList.toggle("lock",locked);c.inert=locked;c.style.display=locked?"none":"";
+  tg.textContent=locked?"🔒 Недоступно: спочатку виконай або пропусти попереднє завдання":(skipped[i]&&!done[i]?"⏭ Пропущено — можна повернутися та виконати. У тебе одна спроба: після перевірки відповідь змінити не вдасться, повторно пропустити завдання не можна":"");
+  document.getElementById("s"+i).style.display=(done[i]||skipped[i])?"none":"";
+ });
+ const n=done.filter(Boolean).length;
+ document.getElementById("pb").style.width=(n/9*100)+"%";
+ const sl=TASKS.map((_,i)=>i).filter(i=>skipped[i]&&!done[i]);
+ const sk=document.getElementById("sk");
+ if(sl.length){sk.style.display="block";sk.innerHTML="<b>Пропущені завдання:</b> поверніться до них, щоб завершити вправу.<div class=\"row\">"+sl.map(i=>`<button class="s" onclick="goTo(${i})">Завдання ${i+1}</button>`).join("")+"</div>"}else sk.style.display="none";
+ if(n==9&&document.getElementById("res").style.display!="block")fin();
+}
+function fin(){
+ const s=pts.reduce((a,b)=>a+b,0);
+ document.getElementById("res").style.display="block";
+ document.getElementById("sc").textContent=s+" із 9";
+ document.getElementById("msg").textContent=s==9?"Бездоганно! Ти чудово розумієш основні поняття реляційних баз даних.":s>=7?"Дуже добре! Перечитай пояснення до завдань, де були помилки.":s>=4?"Непогано, але варто повторити поняття поля, запису, ключа й типів даних.":"Не засмучуйся! Повтор тему та спробуй ще раз — вийде краще.";
+ document.getElementById("res").scrollIntoView({behavior:"smooth"});
+}
+document.getElementById("rs").onclick=()=>location.reload();
+refresh();
+</script></body></html>
