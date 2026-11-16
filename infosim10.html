@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Симулятор «Один день учня»: безпечний інфопростір (10 клас)</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--tx:#1d2433;--mu:#5b6478;--ac:#3b5bdb;--acs:#e7ecff;--ok:#1b7f4b;--oks:#e1f5ea;--wa:#9a5b00;--was:#fff1d6;--er:#b42318;--ers:#fde8e6;--bd:#d9deea;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151d;--card:#1b2030;--tx:#e8ebf4;--mu:#9aa3b8;--ac:#8fa6ff;--acs:#262e52;--ok:#6fdca0;--oks:#16352a;--wa:#ffc766;--was:#3a2e12;--er:#ff9b8f;--ers:#3d1c1a;--bd:#2d3550}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.w{max-width:760px;margin:0 auto;padding:16px}
+.w.wide{max-width:1180px}
+h1{font-size:1.35rem;margin:.2em 0}h2{font-size:1.1rem;margin:.2em 0 .5em}
+.sub{color:var(--mu);margin:0 0 14px;font-size:.95rem}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:18px;margin-top:10px}
+.tag{display:inline-block;background:var(--acs);color:var(--ac);border-radius:99px;padding:2px 10px;font-size:.8rem;font-weight:600}
+.q{font-weight:700;margin:14px 0 8px}
+button.o{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;padding:11px 13px;border:1px solid var(--bd);border-radius:12px;margin:7px 0;cursor:pointer;background:var(--card);color:var(--tx);font:inherit}
+button.o:hover{border-color:var(--ac)}
+button.o b{color:var(--ac);flex:none}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.b{background:var(--ac);color:var(--bg);border:0;border-radius:12px;padding:10px 18px;font:inherit;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
+.b.g{background:transparent;color:var(--ac);border:1px solid var(--ac)}
+.box{border-radius:12px;padding:10px 14px;margin:10px 0}
+.box.ok{background:var(--oks)}.box.wa{background:var(--was)}.box.in{background:var(--acs)}.box.er{background:var(--ers)}
+.chip{display:inline-block;border-radius:99px;padding:2px 10px;font-size:.82rem;font-weight:600}
+.chip.ok{background:var(--oks);color:var(--ok)}.chip.part{background:var(--was);color:var(--wa)}.chip.bad{background:var(--ers);color:var(--er)}.chip.in{background:var(--acs);color:var(--ac)}
+ul,ol{padding-left:22px;margin:6px 0}
+/* таймер */
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0 6px}
+.tm{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:8px 14px}
+.tm .clock{font:700 1.5rem/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;min-width:84px}
+.tm.warn{border-color:var(--wa)}.tm.warn .clock{color:var(--wa)}
+.tm.crit{border-color:var(--er)}.tm.crit .clock{color:var(--er)}
+.prog{flex:1;height:8px;background:var(--acs);border-radius:99px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--ac);transition:width .3s}
+.tm.warn .prog i{background:var(--wa)}.tm.crit .prog i{background:var(--er)}
+.steps{color:var(--mu);font-size:.85rem;white-space:nowrap}
+/* повідомлення */
+.msg{background:var(--bg);border-radius:14px;padding:12px 14px;margin:12px 0;border-left:4px solid var(--ac)}
+.msg .hd{display:flex;justify-content:space-between;gap:10px;color:var(--mu);font-size:.85rem;margin-bottom:6px}
+.msg .subj{font-weight:700;margin-bottom:4px}
+.att{display:inline-block;margin-top:8px;padding:4px 10px;border:1px dashed var(--bd);border-radius:8px;font-size:.9rem}
+.cons{border-left:4px solid var(--mu);background:var(--bg);border-radius:12px;padding:10px 14px;margin:12px 0}
+/* алгоритм */
+.alg{list-style:none;padding:0;margin:8px 0;counter-reset:a}
+.alg li{counter-increment:a;display:flex;gap:10px;padding:8px 0;border-bottom:1px dashed var(--bd)}
+.alg li:last-child{border-bottom:0}
+.alg li:before{content:counter(a);flex:none;width:26px;height:26px;border-radius:50%;background:var(--ac);color:var(--bg);display:grid;place-items:center;font-weight:700;font-size:.85rem}
+.alg .st{font-weight:700;color:var(--ac);margin-right:4px}
+/* ланцюжок */
+.chain{list-style:none;padding:0;margin:8px 0}
+.chain li{position:relative;padding:8px 0 10px 22px;border-left:2px solid var(--bd);margin-left:8px}
+.chain li:before{content:"";position:absolute;left:-7px;top:13px;width:12px;height:12px;border-radius:50%;background:var(--mu)}
+.chain li.ok:before{background:var(--ok)}.chain li.part:before{background:var(--wa)}.chain li.bad:before{background:var(--er)}.chain li.miss:before{background:var(--bd)}
+.chain li.miss{color:var(--mu);font-style:italic}
+.chain .meta{font-size:.8rem;color:var(--mu)}
+.code{font:700 1.05rem/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--bg);border:1px dashed var(--ac);border-radius:10px;padding:10px 12px;word-break:break-all;user-select:all}
+textarea,input[type=number]{width:100%;padding:10px;border-radius:12px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);font:inherit}
+input[type=number]{width:90px}
+textarea{min-height:110px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
+.lnk{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 0;border-bottom:1px dashed var(--bd)}
+.lnk code{flex:1;min-width:200px;word-break:break-all;font-size:.82rem;background:var(--bg);padding:4px 8px;border-radius:8px}
+.big{font-size:1.05rem}
+details summary{cursor:pointer;font-weight:600;color:var(--ac)}
+.gbtn{display:block;width:100%;text-align:left;padding:14px 16px;border:1px solid var(--bd);border-radius:14px;background:var(--card);color:var(--tx);font:inherit;cursor:pointer;margin:8px 0}
+.gbtn:hover{border-color:var(--ac)}
+.gbtn .t{font-weight:700}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:8px 16px;border-radius:99px;font-size:.9rem;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+@media print{.bar,.row,.noprint{display:none!important}}
+</style>
+</head>
+<body>
+<div class="w" id="app"></div>
+<div class="toast" id="toast"></div>
+<script>
+/* =========================================================
+   Симулятор «Один день учня» (10 клас)
+   Група відкриває посилання ...infosim10.html?g=1&min=6
+   Панель вчителя: ...infosim10.html#teacher
+   ========================================================= */
+var STAGES = ["ЗУПИНИСЬ","ПЕРЕВІР","ЗАХИСТИ","ПОВІДОМ","ДІЙ"];
+var GR = {ok:["✅","Безпечна дія"], part:["🟡","Частково правильно"], bad:["❌","Ризикована дія"]};
+
+var S = [
+/* ---------------- Ситуація 1 ---------------- */
+{g:1, ic:"💬", n:"«Проголосуй за мене!»", ch:"Месенджер · викрадення акаунта",
+ role:"Уявіть, що ви — учень чи учениця 10 класу. Вечір, ви сидите в Telegram.",
+ start:"1",
+ nodes:{
+ "1":{t:"19:30", from:"Telegram · однокласник Денис",
+  msg:"«Привіт! Допоможи, будь ласка 🙏 Я беру участь у конкурсі фотографій, мені бракує кількох голосів до перемоги. Проголосуй за мене тут: t-me-vote.online/contest — там треба увійти через Telegram. Тільки швидко, голосування закінчується о 20:00!»",
+  q:"Що ви робите?",
+  o:[
+   {k:"A",t:"Переходжу за посиланням, уводжу свій номер телефону й код, який прийшов у Telegram.",g:"bad",go:"R",
+    c:"Сторінка «дякує за голос». Через хвилину Telegram повідомляє: «Новий вхід: Windows, Нідерланди». Вашим друзям уже надходить таке саме прохання — від вашого імені."},
+   {k:"B",t:"Відкриваю посилання, але нічого не вводжу, лише дивлюся.",g:"part",go:"2",
+    c:"Сторінка схожа на Telegram, але адреса дивна, і ви закриваєте вкладку. Відкривати невідомі посилання ризиковано: деякі сторінки намагаються щось завантажити на пристрій. Згодом ви пишете Денисові в Instagram, і з'ясовується, що його акаунт зламали."},
+   {k:"C",t:"Пишу Денисові в іншому месенджері або телефоную: «Це справді ти просиш?»",g:"ok",go:"2",
+    c:"Денис відповідає: «Нічого я не надсилав! Здається, мій Telegram зламали»."},
+   {k:"D",t:"Пересилаю посилання друзям, щоб вони теж проголосували за Дениса.",g:"bad",go:"2",
+    c:"Двоє друзів уводять код і втрачають акаунти. Пізніше з'ясовується, що Дениса зламали."}
+  ]},
+ "R":{t:"19:35", from:"Telegram · службове сповіщення",
+  msg:"«Новий вхід: Windows, Нідерланди». Однокласники пишуть вам в Instagram: «Ти що, просиш нас за тебе проголосувати?»",
+  q:"Що ви робите негайно?",
+  o:[
+   {k:"A",t:"Видаляю Telegram з телефона.",g:"bad",
+    c:"Застосунок видалено, але шахраї лишилися в акаунті й пишуть від вашого імені."},
+   {k:"B",t:"Нікому не кажу, бо соромно, що попався(лася).",g:"bad",
+    c:"Шахраї розсилають посилання всім вашим контактам, а в чаті класу просять гроші «в борг»."},
+   {k:"C",t:"У налаштуваннях Telegram («Пристрої») завершую всі інші сеанси, вмикаю хмарний пароль (двоетапну перевірку), в Instagram попереджаю друзів і розповідаю батькам.",g:"ok",
+    c:"Шахраїв відключено. Друзі попереджені, ніхто більше не постраждав."},
+   {k:"D",t:"Пишу шахраю, щоб повернув акаунт.",g:"bad",
+    c:"Відповіді немає, а шахрай і далі користується акаунтом."}
+  ], nx:"2"},
+ "2":{t:"19:50", from:"Чат класу 10-А",
+  msg:"Хтось пише: «Мені теж прийшло від Дениса посилання на голосування. Це норм?»",
+  q:"Ваша дія?",
+  o:[
+   {k:"A",t:"Пишу: «Не переходьте! Акаунт Дениса зламали, це шахрайство. Якщо вже ввели код — завершіть інші сеанси в налаштуваннях Telegram».",g:"ok",
+    c:"Однокласники дякують, а одна дівчина встигає завершити чужий сеанс."},
+   {k:"B",t:"Мовчу — це не моя справа.",g:"bad",
+    c:"Ще двоє однокласників уводять код."},
+   {k:"C",t:"Пишу: «Це вірус, видаляйте Telegram!»",g:"part",
+    c:"Попередження є, але порада хибна: видалення застосунку не захищає акаунт."},
+   {k:"D",t:"Жартую в чаті: «Денис, тебе зламали, лошара 😂»",g:"bad",
+    c:"Денисові неприємно, а однокласники так і не зрозуміли, що робити."}
+  ], nx:"3"},
+ "3":{t:"20:30", from:"Особисте повідомлення · Денис",
+  msg:"«Я не можу зайти в Telegram, там змінили пароль... Що мені робити? Батькам казати не хочу.»",
+  q:"Що ви порадите Денисові?",
+  o:[
+   {k:"A",t:"Створити новий акаунт і забути про старий.",g:"bad",
+    c:"Зі старого акаунта шахраї й далі пишуть його контактам."},
+   {k:"B",t:"Написати в Instagram усім друзям, що його зламали, і цього досить.",g:"part",
+    c:"Друзі попереджені, але акаунт досі в шахраїв."},
+   {k:"C",t:"Чекати: може, шахраям набридне.",g:"bad",
+    c:"Від імені Дениса батькам однокласників надходять прохання «терміново скинути гроші на картку»."},
+   {k:"D",t:"Розповісти батькам, відновити доступ через підтримку Telegram, попередити всі контакти іншим каналом, а якщо від його імені просили гроші — звернутися до кіберполіції.",g:"ok",
+    c:"Разом із батьками Денис повертає акаунт, а друзі вже попереджені."}
+  ], nx:"4"},
+ "4":{t:"Наступного дня", from:"Класна година",
+  msg:"Класна керівниця просить кожного запропонувати одне правило, яке захистить акаунти всього класу.",
+  q:"Що ви пропонуєте?",
+  o:[
+   {k:"A",t:"Не додавати в друзі незнайомців.",g:"part",
+    c:"Корисно, але вчора посилання надіслав знайомий — щоправда, з чужого, зламаного акаунта."},
+   {k:"B",t:"Один складний пароль для всіх акаунтів, щоб не забути.",g:"bad",
+    c:"Один витік — і зламано все одразу."},
+   {k:"C",t:"Нікому не повідомляти коди з SMS і Telegram, увімкнути двоетапну перевірку, а дивні прохання друзів перевіряти іншим каналом.",g:"ok",
+    c:"Правило записали на дошці й закріпили в чаті класу."},
+   {k:"D",t:"Не користуватися Telegram.",g:"bad",
+    c:"Шахраї є в усіх месенджерах: проблема не в застосунку."}
+  ]}
+ },
+ alg:[
+  "Незвичне прохання, посилання і «швидко» — привід не поспішати, навіть якщо пише друг.",
+  "Запитати друга іншим каналом (дзвінок, інший месенджер) і уважно подивитися на адресу сайту.",
+  "Ніколи не вводити код підтвердження на сторонніх сайтах; увімкнути двоетапну перевірку (хмарний пароль).",
+  "Попередити однокласників, розповісти батькам або класному керівнику, поскаржитися на посилання.",
+  "Якщо код уже введено: завершити всі інші сеанси, змінити пароль, увімкнути двоетапну перевірку, попередити контакти; якщо вимагали гроші — звернутися до кіберполіції."
+ ]},
+
+/* ---------------- Ситуація 2 ---------------- */
+{g:2, ic:"📱", n:"«НМТ скасують?»", ch:"TikTok і чати · фейкова новина й ШІ-підробка",
+ role:"Уявіть, що ви — учень чи учениця 10 класу. Велика перерва, ви гортаєте стрічку.",
+ start:"1",
+ nodes:{
+ "1":{t:"11:20", from:"TikTok · @osvita_news_ua (12 тис. підписників)",
+  msg:"Відео з тривожною музикою: «ТЕРМІНОВО! З наступного року НМТ скасують, вступ буде лише за платними тестами. МОН уже підписало наказ! Поширюй, поки не видалили!» Під відео 80 тис. вподобань.",
+  q:"Що ви робите?",
+  o:[
+   {k:"A",t:"Вірю: 80 тисяч уподобань не можуть помилятися.",g:"bad",
+    c:"Ви розповідаєте новину друзям як факт."},
+   {k:"B",t:"Пишу в коментарях: «Це правда?»",g:"part",
+    c:"Сотні коментарів «так, жах!», але жодного посилання на документ. Ви так і не знаєте, чи це правда, тож вирішуєте перевірити."},
+   {k:"C",t:"Одразу пересилаю в чат класу: всі мають знати!",g:"bad",
+    c:"За 10 хвилин чат вибухає: хтось панікує, хтось уже пише батькам."},
+   {k:"D",t:"Перевіряю, чи є ця новина на офіційних сайтах МОН та Українського центру оцінювання якості освіти (УЦОЯО).",g:"ok",
+    c:"На офіційних сайтах нічого такого немає, а сам акаунт створено лише місяць тому."}
+  ], nx:"2"},
+ "2":{t:"11:40", from:"Чат класу 10-А",
+  msg:"Однокласниця вже переслала відео в чат. Пишуть: «Кінець, нащо тоді вчитися?», «Брат каже, що в їхньому чаті теж це бачили — значить, правда»."
+  , q:"Як остаточно переконатися, правда це чи ні?",
+  o:[
+   {k:"A",t:"Шукаю першоджерело: офіційні сайти МОН і УЦОЯО, їхні сторінки в соцмережах, перевірені медіа; запитую вчителя.",g:"ok",
+    c:"На сайті УЦОЯО є спростування: таких змін немає."},
+   {k:"B",t:"Якщо відео є в багатьох чатах, значить, правда.",g:"bad",
+    c:"Багато пересилань — це не незалежні джерела, а одне й те саме відео."},
+   {k:"C",t:"Питаю ШІ-чатбот і повністю довіряю його відповіді.",g:"part",
+    c:"Чатбот може допомогти знайти джерела, але може й помилитися чи щось вигадати. Його відповідь теж треба перевірити на офіційному сайті."},
+   {k:"D",t:"Переглядаю інші відео цього автора.",g:"part",
+    c:"Автор постійно публікує «сенсації» без джерел. Це тривожний сигнал, але ще не доказ."}
+  ], nx:"3"},
+ "3":{t:"12:10", from:"Чат класу 10-А",
+  msg:"Ви з'ясували, що це фейк. А однокласницю, яка переслала відео, вже висміюють у чаті.",
+  q:"Що ви напишете в чат?",
+  o:[
+   {k:"A",t:"«Фейк.»",g:"part",
+    c:"Частина класу не вірить: а де докази?"},
+   {k:"B",t:"«Хто це переслав, той не вміє думати 🤦»",g:"bad",
+    c:"Однокласниця виходить з чату, а обговорення перетворюється на сварку."},
+   {k:"C",t:"Нічого: самі розберуться.",g:"bad",
+    c:"Дехто з однокласників ще кілька днів пересилає відео знайомим."},
+   {k:"D",t:"«Ось спростування на сайті УЦОЯО [посилання]. НМТ ніхто не скасовує. Новини про НМТ краще перевіряти на офіційних сайтах: такі відео легко підробити.»",g:"ok",
+    c:"Однокласники заспокоюються, а дехто ставить ваше повідомлення в закріплені."}
+  ], nx:"4"},
+ "4":{t:"15:00", from:"Чат паралелі 10-х класів",
+  msg:"Хтось виклав «фото», де за допомогою ШІ обличчя однокласниці Марти «приклеєне» до чужого тіла в смішній позі. Під ним десятки реакцій «😂», фото вже пересилають далі.",
+  q:"Що ви робите?",
+  o:[
+   {k:"A",t:"Пишу в чат «видаліть це» — і на цьому все.",g:"part",
+    c:"Хтось видаляє, але фото вже розійшлося іншими чатами. Без дорослих зупинити це важко."},
+   {k:"B",t:"Не поширюю; пишу Марті, що підтримую її; скаржуся на допис і розповідаю класному керівнику або батькам.",g:"ok",
+    c:"Допис видаляють, з авторами серйозно говорить адміністрація, а Марта знає, що вона не сама."},
+   {k:"C",t:"Ставлю «😂» — це ж просто жарт.",g:"bad",
+    c:"Кожна реакція робить допис популярнішим. Наступного дня Марта не приходить до школи."},
+   {k:"D",t:"Пересилаю фото Марті, щоб вона знала, що про неї пишуть.",g:"bad",
+    c:"Марта бачить фото без жодної підтримки й не знає, що робити."}
+  ]}
+ },
+ alg:[
+  "Тривожна музика, «ТЕРМІНОВО» і «поширюй, поки не видалили» — ознаки маніпуляції. Не поширювати одразу.",
+  "Шукати першоджерело: офіційні сайти МОН і УЦОЯО, перевірені медіа. Вподобання, пересилання й відповіді чатбота — не доказ.",
+  "Не підтримувати фейки й цькування реакціями: кожен лайк просуває допис.",
+  "Написати спокійне спростування з посиланням; поскаржитися на допис; розповісти дорослим, якщо когось цькують.",
+  "Підтримати людину, яку зачепив фейк чи ШІ-підробка; зробити перевірку «сенсацій» звичкою."
+ ]},
+
+/* ---------------- Ситуація 3 ---------------- */
+{g:3, ic:"🛒", n:"«AirPods за 499 грн»", ch:"Інтернет-магазин · фінансове шахрайство",
+ role:"Уявіть, що ви — учень чи учениця 10 класу. У вас є власна банківська картка, на ній 2 300 грн, які ви відкладали на подарунок.",
+ start:"1",
+ nodes:{
+ "1":{t:"21:00", from:"Instagram · реклама @apple_sale_ukraine",
+  msg:"«🔥 РОЗПРОДАЖ! Оригінальні AirPods Pro — 499 грн замість 9 999! Залишилось 3 шт. Акція діє 15 хвилин!» Сторінку створено 2 тижні тому, коментарі закриті.",
+  q:"Що ви робите?",
+  o:[
+   {k:"A",t:"Перевіряю магазин: вік сторінки, відгуки поза Instagram, реальну ціну на сайтах відомих магазинів; раджуся з батьками.",g:"ok",go:"2",
+    c:"Реальна ціна в 20 разів вища, відгуків ніде немає, а в пошуку трапляється попередження: «шахрайський магазин»."},
+   {k:"B",t:"Одразу замовляю, поки не розібрали: на сторінці оплати вводжу номер картки, термін дії, CVV і код із SMS.",g:"bad",go:"R",
+    c:"Сторінка «обробляє платіж»... і пише: «Помилка оплати». А телефон вібрує від SMS банку."},
+   {k:"C",t:"Пишу в директ: «Це не шахрайство?»",g:"part",go:"2",
+    c:"«Ні, звісно! Залишилось 2 штуки 😉». Така відповідь нічого не доводить, тож ви все ж перевіряєте магазин і знаходите попередження про шахраїв."},
+   {k:"D",t:"Надсилаю другові: «Дивись, яка ціна! Купимо разом?»",g:"bad",go:"2",
+    c:"Друг уже готовий платити. Зупиняє вас лише його старша сестра: «Це ж шахраї!»"}
+  ]},
+ "R":{t:"21:05", from:"Банк · SMS",
+  msg:"«Списання 2 299 грн. Баланс: 1 грн». Сторінка магазину пише: «Помилка оплати, спробуйте ще раз».",
+  q:"Що ви робите негайно?",
+  o:[
+   {k:"A",t:"Пробую оплатити ще раз: може, це справді помилка.",g:"bad",
+    c:"Повторна «оплата» лише підтверджує шахраям, що картка робоча."},
+   {k:"B",t:"Нікому не кажу, бо соромно.",g:"bad",
+    c:"Наступного дня з картки намагаються оплатити ще щось, а батьки дізнаються про все випадково."},
+   {k:"C",t:"Пишу магазину гнівне повідомлення.",g:"bad",
+    c:"Коментарі закриті, а повідомлення в директ ігнорують."},
+   {k:"D",t:"Блокую картку в застосунку банку або через гарячу лінію, розповідаю батькам, зберігаю скриншоти сторінки й SMS, звертаюся до банку щодо оскарження платежу та до кіберполіції.",g:"ok",
+    c:"Картку заблоковано, більше нічого списати не вдасться. Банк прийняв заяву, а сторінку магазину заблокували після скарг."}
+  ], nx:"2"},
+ "2":{t:"21:30", from:"Чат друзів",
+  msg:"Друг пише: «Бачив рекламу AirPods за 499? Я вже думаю замовити!»",
+  q:"Що ви відповісте?",
+  o:[
+   {k:"A",t:"«Це шахраї» — без пояснень.",g:"part",
+    c:"Друг не дуже вірить: «А ти звідки знаєш?»"},
+   {k:"B",t:"«Спершу ти замов, а я подивлюся, чи прийде».",g:"bad",
+    c:"Друг втрачає гроші, а ви — його довіру."},
+   {k:"C",t:"«Не треба! Сторінці два тижні, коментарі закриті, ціна в 20 разів нижча за реальну — це класичні ознаки шахрайства. Поскаржимося на рекламу?»",g:"ok",
+    c:"Друг дякує, і ви вдвох скаржитеся на рекламу в Instagram."},
+   {k:"D",t:"«Замовляй, якщо хочеш».",g:"bad",
+    c:"Друг замовляє й наступного ранку бачить порожню картку."}
+  ], nx:"3"},
+ "3":{t:"Через 2 дні", from:"Viber · невідомий номер",
+  msg:"«Вітаємо! Ви постраждали від шахраїв магазину @apple_sale_ukraine. Ми — служба повернення коштів. Щоб повернути гроші, назвіть номер картки, CVV і код із SMS.»",
+  q:"Що ви робите?",
+  o:[
+   {k:"A",t:"Не відповідаю, блокую номер, кажу батькам; про повернення коштів дізнаюся лише в банку за номером із картки чи застосунку.",g:"ok",
+    c:"Банк підтверджує: його працівники ніколи не просять CVV і коди з SMS. Це була друга хвиля того самого шахрайства."},
+   {k:"B",t:"Надаю дані: дуже хочу повернути гроші.",g:"bad",
+    c:"Шахраї вдруге списують гроші — тепер з батьківської картки, яку вам дали на час."},
+   {k:"C",t:"Перепитую: «А ви точно з поліції?»",g:"part",
+    c:"«Звісно, ось номер мого посвідчення!» Будь-хто може назвати вигаданий номер."},
+   {k:"D",t:"Даю лише номер картки, без CVV.",g:"part",
+    c:"Самого номера картки замало, щоб списати гроші, але шахраї використовують його, щоб у наступних дзвінках видаватися за «банк»."}
+  ], nx:"4"},
+ "4":{t:"Наступного тижня", from:"Урок інформатики",
+  msg:"Учитель просить скласти пам'ятку для молодших учнів про безпечні покупки онлайн. Вам потрібно запропонувати головне правило.",
+  q:"Що ви пропонуєте?",
+  o:[
+   {k:"A",t:"Довіряти магазинам, у яких багато підписників.",g:"bad",
+    c:"Підписників можна купити за кілька сотень гривень."},
+   {k:"B",t:"Платити лише на сторінці, на яку веде реклама.",g:"bad",
+    c:"Саме так і працюють фішингові сторінки оплати."},
+   {k:"C",t:"Ніколи нічого не купувати онлайн.",g:"part",
+    c:"Безпечно, але нереально: такого правила швидко перестануть дотримуватися."},
+   {k:"D",t:"Купувати лише на відомих сайтах, перевіряти відгуки й вік сторінки, нікому не повідомляти CVV і коди з SMS, для покупок мати окрему картку з невеликою сумою.",g:"ok",
+    c:"Пам'ятку надрукували й повісили в кабінеті інформатики."}
+  ]}
+ },
+ alg:[
+  "Надто низька ціна, «залишилось 3 шт.» і «15 хвилин» — тиск, щоб ви не встигли подумати.",
+  "Перевірити вік сторінки, відгуки поза соцмережею, реальну ціну й адресу сайту оплати; порадитися з батьками.",
+  "Ніколи не вводити CVV і коди з SMS на сумнівних сайтах і нікому їх не повідомляти — навіть «банку» чи «поліції».",
+  "Розповісти батькам, попередити друзів, поскаржитися на рекламу чи сторінку.",
+  "Якщо гроші вже списали: заблокувати картку, зберегти докази, звернутися до банку й кіберполіції; не вірити «службам повернення коштів»."
+ ]}
+];
+
+
+/* ---------- утиліти ---------- */
+var app = document.getElementById("app");
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function fmt(sec){sec=Math.max(0,Math.round(sec));var m=Math.floor(sec/60),s=sec%60;return m+":"+(s<10?"0":"")+s}
+function toast(t){var e=$("toast");e.textContent=t;e.classList.add("on");setTimeout(function(){e.classList.remove("on")},1600)}
+function copy(t){
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast("Скопійовано")},function(){fallbackCopy(t)})}
+  else fallbackCopy(t);
+}
+function fallbackCopy(t){var a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy");toast("Скопійовано")}catch(e){toast("Виділіть і скопіюйте вручну")}a.remove()}
+function getSit(g){for(var i=0;i<S.length;i++)if(S[i].g==g)return S[i];return null}
+function optOf(sit,nid,k){var n=sit.nodes[nid];if(!n)return null;for(var i=0;i<n.o.length;i++)if(n.o[i].k===k)return n.o[i];return null}
+function nextOf(sit,nid,opt){return opt.go!==undefined?opt.go:(sit.nodes[nid].nx||null)}
+function stepLabel(nid){return nid==="R"?"Відновлення":"Рішення "+nid}
+function algHtml(sit){
+  var h='<ol class="alg">';
+  sit.alg.forEach(function(a,i){h+='<li><div><span class="st">'+STAGES[i]+'.</span>'+esc(a)+'</div></li>'});
+  return h+'</ol>';
+}
+function store(){try{return JSON.parse(localStorage.getItem("infosim10_results")||"{}")}catch(e){return {}}}
+function saveLocal(g,code){try{var s=store();s[g]=code;localStorage.setItem("infosim10_results",JSON.stringify(s))}catch(e){}}
+
+/* ---------- режим групи ---------- */
+var P = new URLSearchParams(location.search);
+var MIN = Math.min(30,Math.max(1,parseFloat(P.get("min"))||6));
+var st = null, tick = null;
+
+function home(){
+  var h='<h1>🎒 Один день учня</h1><p class="sub">10 клас · Безпечний інфопростір · Зупинись • Перевір • Захисти</p>';
+  h+='<div class="card"><p>Оберіть свою групу. Кожна група працює з власною ситуацією.</p>';
+  S.forEach(function(s){h+='<button class="gbtn" onclick="intro('+s.g+')"><span class="tag">Група '+s.g+'</span><div class="t">'+s.ic+' '+esc(s.n)+'</div><div class="sub" style="margin:0">'+esc(s.ch)+'</div></button>'});
+  h+='</div>';
+  app.className="w";app.innerHTML=h;
+}
+
+function intro(g){
+  var s=getSit(g);if(!s)return home();
+  var h='<h1>'+s.ic+' '+esc(s.n)+'</h1><p class="sub"><span class="tag">Група '+s.g+'</span> &nbsp;'+esc(s.ch)+'</p>';
+  h+='<div class="card"><p class="big">'+esc(s.role)+'</p>';
+  h+='<div class="box in"><b>Як працюємо</b><ul>'+
+     '<li>Протягом дня ви отримаєте <b>4 повідомлення чи події</b>. Для кожної оберіть дію, обговоривши її в групі.</li>'+
+     '<li>Після кожного рішення ви побачите його <b>наслідки</b>. Повернутися назад не можна, як і в житті.</li>'+
+     '<li>На всю ситуацію у вас <b>'+fmt(MIN*60)+' хв</b>. Якщо час вичерпається, ви побачите правильний порядок дій.</li>'+
+     '<li>Наприкінці ви отримаєте <b>код результату</b>. Надішліть його вчителю.</li></ul></div>';
+  h+='<div class="row"><button class="b" onclick="begin('+s.g+')">▶ Почати (таймер запуститься)</button></div></div>';
+  app.className="w";app.innerHTML=h;
+}
+
+function begin(g){
+  var s=getSit(g);
+  st={g:g,sit:s,node:s.start,chain:[],t0:Date.now(),stepT0:Date.now(),end:Date.now()+MIN*60000,pending:null,done:false,to:false};
+  clearInterval(tick);tick=setInterval(upd,250);
+  showNode();
+}
+
+function timerHtml(){
+  var n=st.chain.length+(st.pending?0:1);
+  return '<div class="bar"><div class="tm" id="tm"><span>⏱</span><span class="clock" id="clk">'+fmt((st.end-Date.now())/1000)+'</span><div class="prog"><i id="pg" style="width:100%"></i></div><span class="steps">'+(st.node==="R"?"відновлення":"крок "+Math.min(n,4)+" з 4")+'</span></div></div>';
+}
+function upd(){
+  if(!st||st.done)return;
+  var left=(st.end-Date.now())/1000, el=$("clk");
+  if(el){el.textContent=fmt(left);var p=Math.max(0,left/(MIN*60))*100;$("pg").style.width=p+"%";
+    var tm=$("tm");tm.className="tm"+(left<=30?" crit":left<=60?" warn":"");}
+  if(left<=0)finish(true);
+}
+
+function showNode(){
+  var s=st.sit,n=s.nodes[st.node];
+  var h=timerHtml();
+  h+='<div class="card"><span class="tag">Група '+s.g+' · '+esc(s.n)+'</span>';
+  h+='<div class="msg"><div class="hd"><span>'+esc(n.from)+'</span><b>'+esc(n.t)+'</b></div>';
+  if(n.subj)h+='<div class="subj">'+esc(n.subj)+'</div>';
+  h+='<div>'+esc(n.msg)+'</div>';
+  if(n.att)h+='<div class="att">'+esc(n.att)+'</div>';
+  h+='</div><div class="q">'+esc(n.q)+'</div>';
+  n.o.forEach(function(o){h+='<button class="o" onclick="choose(\''+o.k+'\')"><b>'+o.k+'</b><span>'+esc(o.t)+'</span></button>'});
+  h+='</div>';
+  app.className="w";app.innerHTML=h;window.scrollTo(0,0);upd();
+}
+
+function choose(k){
+  if(st.done||st.pending)return;
+  var s=st.sit,o=optOf(s,st.node,k);
+  var sec=Math.round((Date.now()-st.stepT0)/1000);
+  st.chain.push({n:st.node,k:k,sec:sec});
+  st.pending={o:o,next:nextOf(s,st.node,o)};
+  var n=s.nodes[st.node];
+  var h=timerHtml();
+  h+='<div class="card"><span class="tag">Група '+s.g+' · '+esc(s.n)+'</span>';
+  h+='<div class="msg"><div class="hd"><span>'+esc(n.from)+'</span><b>'+esc(n.t)+'</b></div><div>'+esc(n.q)+'</div></div>';
+  h+='<p><b>Ваше рішення:</b> '+esc(o.t)+'</p>';
+  h+='<div class="cons"><b>Що сталося далі:</b><br>'+esc(o.c)+'</div>';
+  h+='<div class="row"><button class="b" onclick="goNext()">'+(st.pending.next?"Далі →":"Завершити день ✔")+'</button></div></div>';
+  app.innerHTML=h;window.scrollTo(0,0);upd();
+}
+
+function goNext(){
+  if(st.done)return;
+  var nx=st.pending.next;st.pending=null;
+  if(!nx)return finish(false);
+  st.node=nx;st.stepT0=Date.now();showNode();
+}
+
+function makeCode(){
+  var ch=st.chain.map(function(c){return c.n+c.k}).join(".");
+  var tm=st.chain.map(function(c){return c.sec}).join(".");
+  return "IU-G"+st.g+"-"+(ch||"0")+"-"+(tm||"0")+"-"+(st.to?"to":"ok")+"-"+MIN;
+}
+
+function finish(timeout){
+  if(st.done)return;
+  st.done=true;st.to=!!timeout;clearInterval(tick);
+  var code=makeCode();saveLocal(st.g,code);
+  var s=st.sit,used=Math.round((Date.now()-st.t0)/1000);
+  var h='<h1>'+s.ic+' '+esc(s.n)+'</h1><p class="sub"><span class="tag">Група '+s.g+'</span></p>';
+  if(timeout){
+    h+='<div class="card"><div class="box er"><b>⏰ Час вичерпано.</b> Ви встигли ухвалити рішень: '+st.chain.length+'. Нижче наведено правильний порядок дій у цій ситуації — він знадобиться під час спільного обговорення.</div>';
+    h+='<h2>✅ Правильний порядок дій</h2>'+algHtml(s)+'</div>';
+  } else {
+    h+='<div class="card"><div class="box ok"><b>✔ День завершено вчасно</b> за '+fmt(used)+' з '+fmt(MIN*60)+'.</div></div>';
+  }
+  h+='<div class="card"><h2>📨 Код результату для вчителя</h2><p class="sub">Скопіюйте код і надішліть його вчителю (у чат класу або як скаже вчитель).</p>';
+  h+='<div class="code" id="code">'+code+'</div><div class="row"><button class="b" onclick="copy(\''+code+'\')">Скопіювати код</button></div></div>';
+  h+='<div class="card"><h2>🔗 Ваш ланцюжок рішень</h2>'+chainHtml(s,st.chain,timeout,false)+'</div>';
+  if(!timeout){
+    h+='<div class="card"><details><summary>Показати правильний порядок дій</summary>'+algHtml(s)+'</details></div>';
+  }
+  app.className="w";app.innerHTML=h;window.scrollTo(0,0);
+}
+
+/* ланцюжок рішень (для групи й викладача) */
+function chainHtml(s,chain,timeout,showGrade){
+  var h='<ul class="chain">',last=null;
+  chain.forEach(function(c){
+    var n=s.nodes[c.n],o=optOf(s,c.n,c.k);if(!n||!o)return;
+    var g=GR[o.g];
+    h+='<li class="'+(showGrade?o.g:"")+'"><div class="meta">'+esc(n.t)+' · '+stepLabel(c.n)+' · ⏱ '+fmt(c.sec)+'</div>';
+    h+='<div><b>'+o.k+'.</b> '+esc(o.t)+'</div>';
+    if(showGrade)h+='<span class="chip '+o.g+'">'+g[0]+' '+g[1]+'</span>';
+    h+='</li>';
+    last={n:c.n,o:o};
+  });
+  if(timeout){
+    // кроки, до яких не дійшли
+    var nid=last?nextOf(s,last.n,last.o):s.start, guard=0;
+    while(nid&&guard++<8){var n=s.nodes[nid];h+='<li class="miss"><div class="meta">'+esc(n.t)+' · '+stepLabel(nid)+'</div>Не встигли: '+esc(n.q)+'</li>';nid=n.nx||null}
+  }
+  return h+'</ul>';
+}
+
+/* ---------- режим викладача ---------- */
+function parseCodes(text){
+  var re=/IU-G([1-3])-([0-9RA-D.]+)-([0-9.]+)-(ok|to)(?:-(\d+(?:\.\d+)?))?/g,m,res={};
+  while((m=re.exec(text))){
+    var g=+m[1],s=getSit(g);if(!s)continue;
+    var ks=m[2]==="0"?[]:m[2].split("."),ts=m[3].split("."),chain=[],ok=true;
+    ks.forEach(function(p,i){var nid=p.slice(0,-1),k=p.slice(-1);if(!optOf(s,nid,k))ok=false;chain.push({n:nid,k:k,sec:+ts[i]||0})});
+    if(ok)res[g]={g:g,chain:chain,to:m[4]==="to",min:m[5]?+m[5]:null,raw:m[0]};
+  }
+  return res;
+}
+
+function teacher(){
+  var base=location.href.split("#")[0].split("?")[0];
+  var h='<h1>👩‍🏫 Панель вчителя</h1><p class="sub">Симулятор «Один день учня» (10 клас) · ланцюжки рішень груп</p>';
+  h+='<div class="card noprint"><h2>1. Посилання для груп</h2><div class="row" style="margin-top:0"><label>Час на ситуацію, хв: <input type="number" id="mins" min="1" max="30" step="1" value="'+MIN+'"></label></div><div id="links"></div></div>';
+  h+='<div class="card noprint"><h2>2. Коди результатів</h2><p class="sub">Вставте коди груп. Можна вставити весь текст із чату — коди буде знайдено автоматично.</p>';
+  h+='<textarea id="codes" placeholder="IU-G1-…&#10;IU-G2-…&#10;IU-G3-…"></textarea>';
+  h+='<div class="row"><button class="b" onclick="board()">Показати ланцюжки</button><button class="b g" onclick="loadLocal()">Результати з цього пристрою</button><button class="b g" onclick="demo()">Демо-приклад</button></div></div>';
+  h+='<div id="board"></div>';
+  h+='<div class="card"><details id="algs"><summary>Правильний порядок дій у всіх ситуаціях (для обговорення)</summary><div class="grid" style="margin-top:10px">';
+  S.forEach(function(s){h+='<div><h2>'+s.ic+' Група '+s.g+': '+esc(s.n)+'</h2>'+algHtml(s)+'</div>'});
+  h+='</div></details></div>';
+  app.className="w wide";app.innerHTML=h;
+  var draw=function(){
+    var m=Math.min(30,Math.max(1,parseFloat($("mins").value)||6)),L="";
+    S.forEach(function(s){var u=base+"?g="+s.g+"&min="+m;
+      L+='<div class="lnk"><b>Група '+s.g+'</b> '+s.ic+'<code>'+esc(u)+'</code><button class="b g" onclick="copy(\''+u+'\')">Копіювати</button><a class="b g" href="'+u+'" target="_blank" rel="noopener">Відкрити</a></div>'});
+    $("links").innerHTML=L;
+  };
+  $("mins").addEventListener("input",draw);draw();
+}
+function loadLocal(){var s=store(),t=[];for(var k in s)t.push(s[k]);if(!t.length){toast("На цьому пристрої результатів ще немає");return}$("codes").value=t.join("\n");board()}
+function demo(){$("codes").value="IU-G1-1A.RC.2A.3D.4C-48.35.40.52.30-ok-6\nIU-G2-1B.2D.3D.4B-60.75.90.44-ok-6\nIU-G3-1A.2C-95.140-to-6";board()}
+
+function board(){
+  var r=parseCodes($("codes").value),h='',n=0;
+  S.forEach(function(s){
+    var x=r[s.g];
+    h+='<div class="card"><h2>'+s.ic+' Група '+s.g+': '+esc(s.n)+'</h2>';
+    if(!x){h+='<p class="sub">Код ще не надіслано.</p></div>';return}
+    n++;
+    var c={ok:0,part:0,bad:0},tot=0;
+    x.chain.forEach(function(ci){var o=optOf(s,ci.n,ci.k);c[o.g]++;tot+=ci.sec});
+    h+='<div class="row" style="margin-top:0">'+(x.to?'<span class="chip bad">⏰ Не встигли</span>':'<span class="chip ok">✔ Вчасно</span>')+
+       '<span class="chip in">⏱ '+fmt(tot)+(x.min?' з '+fmt(x.min*60):'')+'</span>'+
+       '<span class="chip ok">✅ '+c.ok+'</span><span class="chip part">🟡 '+c.part+'</span><span class="chip bad">❌ '+c.bad+'</span></div>';
+    h+=chainHtml(s,x.chain,x.to,true);
+    h+='<details'+(x.to?' open':'')+'><summary>Правильний порядок дій</summary>'+algHtml(s)+'</details></div>';
+  });
+  $("board").innerHTML='<div class="grid">'+h+'</div>';
+  if(!n)toast("Кодів не знайдено");
+}
+
+/* ---------- запуск ---------- */
+if(/teacher/i.test(location.hash)||P.has("teacher"))teacher();
+else if(P.get("g")&&getSit(P.get("g")))intro(+P.get("g"));
+else home();
+window.addEventListener("hashchange",function(){if(/teacher/i.test(location.hash))teacher()});
+</script>
+</body>
+</html>
